@@ -34,6 +34,17 @@ class TheResponsibleBusinessSimulator:
             f"Input data: \n {input_data_formatted}"
         )
 
+    def _get_options(self):
+        """
+        This function calculates the amount of different options (or calculations) of the model:
+        Amount of scenarios x Amount of decision makers options x Amount of key outputs
+        """
+        return (
+            len(self.input_dict["scenarios"])
+            * len(self.input_dict["decision_makers_options"])
+            * len(self.input_dict["key_outputs"])
+        )
+
     def build(self):
         """This function builds all necessary elements for a generic RBS case"""
         print(f"Creating '{self.name}'")
@@ -53,5 +64,5 @@ class TheResponsibleBusinessSimulator:
         """This function deals with the visualizations of the outcomes"""
         # Set a Visualize class only if this has not yet been initialised.
         if not self.visualizer:
-            self.visualizer = Visualize(self.output_dict)
+            self.visualizer = Visualize(self.output_dict, self._get_options())
         return self.visualizer.create_visual(visual_request, key, **kwargs)

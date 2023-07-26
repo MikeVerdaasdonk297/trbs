@@ -56,55 +56,55 @@ def import_case(file_format: str, path):
 
     # step 1
     df = df_dict["configurations"]
-    np_dict["configurations"] = df.configuration.to_numpy()
-    np_dict["configuration_value"] = df.value.to_numpy()
+    np_dict["configurations"] = df.configuration.to_numpy()  # check
+    np_dict["configuration_value"] = df.value.to_numpy()  # check
 
     # step 2
     df = df_dict["key_outputs"]
-    np_dict["key_outputs"] = df.key_output.to_numpy()
-    np_dict["key_output_unit"] = df.unit.to_numpy()
-    np_dict["key_output_theme"] = df.theme.to_numpy()
+    np_dict["key_outputs"] = df.key_output.to_numpy()  # check
+    np_dict["key_output_unit"] = df.unit.to_numpy()  # REMOVED
+    np_dict["key_output_theme"] = df.theme.to_numpy()  # check
     themes = np.array([])
     for i in range(len(df)):
         if not (df.theme.iloc[i] in themes):
             themes = np.append(themes, [df.theme.iloc[i]])
-    np_dict["themes"] = themes
-    np_dict["key_output_minimum"] = df.minimum.to_numpy()
-    np_dict["key_output_maximum"] = df.maximum.to_numpy()
-    np_dict["key_output_monetary"] = df.monetary.to_numpy()
-    np_dict["key_output_smaller_the_better"] = df.smaller_the_better.to_numpy()
-    np_dict["key_output_linear"] = df.linear.to_numpy()
-    np_dict["key_output_automatic"] = df.automatic.to_numpy()
-    np_dict["key_output_start"] = df.start.to_numpy()
-    np_dict["key_output_end"] = df.end.to_numpy()
-    np_dict["key_output_threshold"] = df.threshold.to_numpy()
+    np_dict["themes"] = themes  # moved to theme weights
+    np_dict["key_output_minimum"] = df.minimum.to_numpy()  # check
+    np_dict["key_output_maximum"] = df.maximum.to_numpy()  # check
+    np_dict["key_output_monetary"] = df.monetary.to_numpy()  # check
+    np_dict["key_output_smaller_the_better"] = df.smaller_the_better.to_numpy()  # check
+    np_dict["key_output_linear"] = df.linear.to_numpy()  # check
+    np_dict["key_output_automatic"] = df.automatic.to_numpy()  # check
+    np_dict["key_output_start"] = df.start.to_numpy()  # check
+    np_dict["key_output_end"] = df.end.to_numpy()  # check
+    np_dict["key_output_threshold"] = df.threshold.to_numpy()  # check
 
     # step 3
     df = df_dict["decision_makers_options"]
     pivotted_df = df.pivot(index="decision_makers_option", columns="internal_variable_input", values="value")
-    np_dict["decision_makers_options"] = pivotted_df.index.to_numpy()
-    np_dict["internal_variable_inputs"] = pivotted_df.columns.to_numpy()
-    np_dict["decision_makers_option_value"] = pivotted_df.values
+    np_dict["decision_makers_options"] = pivotted_df.index.to_numpy()  # check
+    np_dict["internal_variable_inputs"] = pivotted_df.columns.to_numpy()  # check
+    np_dict["decision_makers_option_value"] = pivotted_df.values  # check
 
     # step 4
     df = df_dict["scenarios"]
     pivotted_df = df.pivot(index="scenario", columns="external_variable_input", values="value")
-    np_dict["scenarios"] = pivotted_df.index.to_numpy()
-    np_dict["external_variable_inputs"] = pivotted_df.columns.to_numpy()
-    np_dict["scenario_value"] = pivotted_df.values
+    np_dict["scenarios"] = pivotted_df.index.to_numpy()  # check
+    np_dict["external_variable_inputs"] = pivotted_df.columns.to_numpy()  # check
+    np_dict["scenario_value"] = pivotted_df.values  # check
 
     # step 5a
     df = df_dict["fixed_inputs"]
-    np_dict["fixed_inputs"] = df.fixed_input.to_numpy()
-    np_dict["fixed_input_value"] = df.value.to_numpy()
-    np_dict["fixed_input_unit"] = df.unit.to_numpy()
+    np_dict["fixed_inputs"] = df.fixed_input.to_numpy()  # check
+    np_dict["fixed_input_value"] = df.value.to_numpy()  # check
+    np_dict["fixed_input_unit"] = df.unit.to_numpy()  # removed
 
     # step 5b
     df = df_dict["intermediates"]
-    np_dict["intermediates"] = df.intermediate.to_numpy()
-    np_dict["intermediate_unit"] = df.unit.to_numpy()
-    np_dict["intermediate_minimum"] = df.minimum.to_numpy()
-    np_dict["intermediate_maximum"] = df.maximum.to_numpy()
+    np_dict["intermediates"] = df.intermediate.to_numpy()  # removed
+    np_dict["intermediate_unit"] = df.unit.to_numpy()  # removed
+    np_dict["intermediate_minimum"] = df.minimum.to_numpy()  # removed
+    np_dict["intermediate_maximum"] = df.maximum.to_numpy()  # removed
 
     # step 5c
     df = df_dict["dependencies"]
@@ -157,14 +157,14 @@ def import_case(file_format: str, path):
     # order the dependency arrays
     sorted_index = np.argsort(calculation_order)
     np_dict["dependencies"] = dependencies_unsorted[sorted_index]
-    np_dict["destination"] = destination_unsorted[sorted_index]
-    np_dict["argument_1"] = argument_1_unsorted[sorted_index]
-    np_dict["argument_2"] = argument_2_unsorted[sorted_index]
-    np_dict["operator"] = operator_unsorted[sorted_index]
-    np_dict["maximum_effect"] = maximum_effect_unsorted[sorted_index]
-    np_dict["accessibility"] = accessibility_unsorted[sorted_index]
-    np_dict["probability_of_success"] = probability_of_success_unsorted[sorted_index]
-    np_dict["saturation_point"] = saturation_point_unsorted[sorted_index]
+    np_dict["destination"] = destination_unsorted[sorted_index]  # check
+    np_dict["argument_1"] = argument_1_unsorted[sorted_index]  # check
+    np_dict["argument_2"] = argument_2_unsorted[sorted_index]  # check
+    np_dict["operator"] = operator_unsorted[sorted_index]  # check
+    np_dict["maximum_effect"] = maximum_effect_unsorted[sorted_index]  # check
+    np_dict["accessibility"] = accessibility_unsorted[sorted_index]  # check
+    np_dict["probability_of_success"] = probability_of_success_unsorted[sorted_index]  # check
+    np_dict["saturation_point"] = saturation_point_unsorted[sorted_index]  # check
 
     # step 6a
     df = df_dict["theme_weights"]
@@ -173,7 +173,8 @@ def import_case(file_format: str, path):
     theme_weight = np.empty_like(theme_weight_unsorted)
     for i in range(len(themes)):
         theme_weight[i] = theme_weight_unsorted[np.where(themes_unsorted == themes[i])[0][0]]
-    np_dict["theme_weight"] = theme_weight
+    np_dict["theme_weight"] = theme_weight  # check
+
     # step 6b
     df = df_dict["key_output_weights"]
     key_outputs_unsorted = df.key_output.to_numpy()
@@ -184,7 +185,7 @@ def import_case(file_format: str, path):
         key_output_weight[i] = key_output_weight_unsorted[
             np.where(key_outputs_unsorted == np_dict["key_outputs"][i])[0][0]
         ]
-    np_dict["key_output_weight"] = key_output_weight
+    np_dict["key_output_weight"] = key_output_weight  # check
 
     # step 7
     df = df_dict["scenario_weights"]
@@ -194,6 +195,6 @@ def import_case(file_format: str, path):
     scenario_weight = np.empty(no_scenarios)
     for i in range(no_scenarios):
         scenario_weight[i] = scenario_weight_unsorted[np.where(scenarios_unsorted == np_dict["scenarios"][i])[0][0]]
-    np_dict["scenario_weight"] = scenario_weight
+    np_dict["scenario_weight"] = scenario_weight  # check
 
     return np_dict

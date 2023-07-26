@@ -37,7 +37,7 @@ pre-commit install
 
 **Step x:** open the Jupyter notebook.
 ```
-jupyter notebook --notebook-dir=\model
+jupyter notebook
 ```
 
 **(optional) A1:** Create a new branch if you want to work on a new feature, bug or case.

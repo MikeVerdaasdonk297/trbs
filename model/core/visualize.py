@@ -34,7 +34,7 @@ class Visualize:
             "barchart": self._create_barchart,
         }
         self.available_outputs = ["key_outputs", "appreciations", "weighted_appreciations"]
-        self.available_kwargs = ["scenario", "decision_makers_option"]
+        self.available_kwargs = ["scenario", "decision_makers_option", "stacked"]
 
     def _validate_kwargs(self, **kwargs):
         for argument, _ in kwargs.items():
@@ -115,6 +115,19 @@ class Visualize:
         formatted_data["value"] = values
         return formatted_data
 
+    @staticmethod
+    def _apply_filters(dataframe: pd.DataFrame, drop_used=False, **kwargs):
+        name_str = ""
+        for arg, value in kwargs.items():
+            if arg not in dataframe.columns:
+                continue
+            dataframe = dataframe[dataframe[arg] == value]
+            if drop_used:
+                dataframe = dataframe.drop(columns=[arg], axis=1)
+            name_str += f" | {value}"
+
+        return dataframe, name_str
+
     def _create_table(self, key, **kwargs):
         """
         This function creates a 2- or 3-dimensional table
@@ -122,13 +135,7 @@ class Visualize:
         table_data = self._format_data_for_visual(key)
 
         # Filter the data based on potentially provided arguments by the user.
-        name_str = ""
-        for arg, value in kwargs.items():
-            if arg not in table_data.columns:
-                continue
-            table_data = table_data[table_data[arg] == value]
-            name_str += f" | {value}"
-
+        table_data, name_str = self._apply_filters(table_data, **kwargs)
         table_data = (
             table_data.set_index(["scenario", key])
             .pivot(columns="decision_makers_option", values="value")
@@ -139,9 +146,17 @@ class Visualize:
         return self._table_styler(table_data.style, table_name)
 
     def _create_barchart(self, key, **kwargs):
-        appreciations = self._format_data_for_visual(key).reset_index(names="Decision maker option")
-        axis = appreciations.plot.bar(x="Decision maker option", stacked=True, color=self.colors, figsize=(10, 5))
-        self._graph_styler(axis, f"Values of {self._str_snake_case_to_text(key)} | {kwargs['scenario']}")
+        dims = self._find_dimension_level(self.outcomes, key)
+        if dims > 2 and "scenario" not in kwargs:
+            raise VisualizationError(f"Too many dimensions ({dims}). Please specify a scenario")
+        stacked = kwargs["stacked"] if "stacked" in kwargs else True
+
+        appreciations = self._format_data_for_visual(key)
+        bar_data, name_str = self._apply_filters(appreciations, drop_used=True, **kwargs)
+        rest_cols = [col for col in bar_data.columns if col not in ["decision_makers_option", "value"]]
+        bar_data = bar_data.pivot(index="decision_makers_option", columns=rest_cols, values="value").reset_index()
+        axis = bar_data.plot.bar(x="decision_makers_option", stacked=stacked, color=self.colors, figsize=(10, 5))
+        self._graph_styler(axis, f"Values of {self._str_snake_case_to_text(key)}{name_str}")
 
         plt.show()
 

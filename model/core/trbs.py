@@ -2,7 +2,7 @@
 This module contains the TRBS class. This is the parent class that deals with anything related to a Responsible
 Business Simulator Case.
 """
-from core.import_case import import_case
+from core.case_importer import CaseImporter
 from core.evaluate import Evaluate
 from core.appreciate import Appreciate
 from core.visualize import Visualize
@@ -14,10 +14,10 @@ class TheResponsibleBusinessSimulator:
     dependencies and calculate appreciations.
     """
 
-    def __init__(self, name, file_extension, file_path):
-        self.name = name
-        self.file_extension = file_extension
+    def __init__(self, file_path, file_extension, name):
         self.file_path = file_path
+        self.file_extension = file_extension
+        self.name = name
         self.input_dict = {}
         self.output_dict = {}
         self.visualizer = None
@@ -48,7 +48,8 @@ class TheResponsibleBusinessSimulator:
     def build(self):
         """This function builds all necessary elements for a generic RBS case"""
         print(f"Creating '{self.name}'")
-        self.input_dict = import_case(self.file_extension, self.file_path)
+        case_import = CaseImporter(self.file_path, self.name, self.file_extension)
+        self.input_dict = case_import.import_case()
 
     def evaluate(self):
         """This function deals with the evaluation of all dependencies"""

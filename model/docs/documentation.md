@@ -7,10 +7,11 @@ a separate chapter, with the focus on the currently available options.
 
 ### Function: *build()*
 What **does** it do?
-- Load a case given the user provided a proper `name`, `file_format` and `path`. 
+- Load a case given the user provided a proper `name`, `file_extension` and `file_path`. 
+- Verify that **at least** all tables are there and checks both for missing column names and extra column names.
 
 What **doesn't** it do?
-- Validate the correctness of the case it loads.
+- Use the `configurations` sheet
 
 ### Function: *evaluate()*
 This function creates a `Evaluate` class (see: core/evaluate.py).

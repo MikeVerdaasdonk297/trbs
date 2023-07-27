@@ -47,7 +47,7 @@ class CaseImporter:
         return {key: value.columns.values.tolist() for key, value in template.items()}
 
     def _check_data_columns(self, to_check, table):
-        column_list = to_check.values.tolist()
+        column_list = to_check.columns.values.tolist()
 
         # 1. Validate all necessary columns are there
         missing_cols = [col for col in self.validate_dict[table] if col not in column_list]
@@ -57,13 +57,14 @@ class CaseImporter:
         extra_cols = [col for col in column_list if col not in self.validate_dict[table]]
         if extra_cols:
             warnings.warn(f"column(s) '{', '.join(extra_cols)}' are not used for '{table}'")
+        return to_check.drop(columns=extra_cols)
 
     def _create_dataframes_dict(self, table):
         try:
             table_data = self.importers[self.extension](table)
         except ValueError as value_error:
             raise TemplateError(f"Sheet '{table}' is missing") from value_error
-        self._check_data_columns(table_data.columns, table)
+        table_data = self._check_data_columns(table_data, table)
         self.dataframes_dict[table] = table_data
 
     def _convert_to_numpy_arrays_2d(self, table, data):
@@ -158,4 +159,4 @@ class CaseImporter:
         for table in self.validate_dict:
             self._create_dataframes_dict(table)
         self._create_input_dict()
-        return self.input_dict
+        return self.input_dict, self.dataframes_dict

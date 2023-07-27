@@ -2,6 +2,7 @@
 This module contains the TRBS class. This is the parent class that deals with anything related to a Responsible
 Business Simulator Case.
 """
+from core.case_exporter import CaseExporter
 from core.case_importer import CaseImporter
 from core.evaluate import Evaluate
 from core.appreciate import Appreciate
@@ -19,8 +20,10 @@ class TheResponsibleBusinessSimulator:
         self.file_extension = file_extension
         self.name = name
         self.input_dict = {}
+        self.dataframe_dict = {}
         self.output_dict = {}
         self.visualizer = None
+        self.exporter = None
 
     def __str__(self):
         input_data_formatted = (
@@ -49,7 +52,7 @@ class TheResponsibleBusinessSimulator:
         """This function builds all necessary elements for a generic RBS case"""
         print(f"Creating '{self.name}'")
         case_import = CaseImporter(self.file_path, self.name, self.file_extension)
-        self.input_dict = case_import.import_case()
+        self.input_dict, self.dataframe_dict = case_import.import_case()
 
     def evaluate(self):
         """This function deals with the evaluation of all dependencies"""
@@ -67,3 +70,9 @@ class TheResponsibleBusinessSimulator:
         if not self.visualizer:
             self.visualizer = Visualize(self.output_dict, self._get_options())
         return self.visualizer.create_visual(visual_request, key, **kwargs)
+
+    def transform(self, output_path, requested_format):
+        """This function deals with transforming a case to a new format."""
+        if not self.exporter:
+            self.exporter = CaseExporter(output_path, self.name, self.dataframe_dict)
+        self.exporter.create_template_for_requested_format(requested_format)

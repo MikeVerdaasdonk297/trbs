@@ -16,10 +16,6 @@
             {
                 "name":"value",
                 "type":"number"
-            },
-            {
-                "name":"unit",
-                "type":"string"
             }
         ],
         "primaryKey":[
@@ -32,43 +28,37 @@
             "index":0,
             "external_variable_input":"Cost of accident",
             "scenario":"Base case",
-            "value":15000.0,
-            "unit":"$"
+            "value":15000.0
         },
         {
             "index":1,
             "external_variable_input":"Effectiveness water recycling",
             "scenario":"Base case",
-            "value":0.98,
-            "unit":"%"
+            "value":0.98
         },
         {
             "index":2,
             "external_variable_input":"Cost of accident",
             "scenario":"Optimistic",
-            "value":12000.0,
-            "unit":"$"
+            "value":12000.0
         },
         {
             "index":3,
             "external_variable_input":"Effectiveness water recycling",
             "scenario":"Optimistic",
-            "value":1.0,
-            "unit":"%"
+            "value":1.0
         },
         {
             "index":4,
             "external_variable_input":"Cost of accident",
             "scenario":"Pessimistic",
-            "value":20000.0,
-            "unit":"$"
+            "value":20000.0
         },
         {
             "index":5,
             "external_variable_input":"Effectiveness water recycling",
             "scenario":"Pessimistic",
-            "value":0.9,
-            "unit":"%"
+            "value":0.9
         }
     ]
 }

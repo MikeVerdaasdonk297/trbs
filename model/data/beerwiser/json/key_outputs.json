@@ -10,10 +10,6 @@
                 "type":"string"
             },
             {
-                "name":"unit",
-                "type":"string"
-            },
-            {
                 "name":"theme",
                 "type":"string"
             },
@@ -63,7 +59,6 @@
         {
             "index":0,
             "key_output":"Accidents reduction",
-            "unit":"#\/year",
             "theme":"People",
             "minimum":null,
             "maximum":null,
@@ -78,7 +73,6 @@
         {
             "index":1,
             "key_output":"Water use reduction",
-            "unit":"hl\/year",
             "theme":"Planet",
             "minimum":null,
             "maximum":null,
@@ -93,7 +87,6 @@
         {
             "index":2,
             "key_output":"Production cost reduction",
-            "unit":"%",
             "theme":"Profit",
             "minimum":null,
             "maximum":null,

@@ -126,6 +126,10 @@ class Visualize:
                 dataframe = dataframe.drop(columns=[arg], axis=1)
             name_str += f" | {value}"
 
+        # Check if dataframe is empty after applying filters
+        if dataframe.empty:
+            raise VisualizationError("No data for given selection. Are your arguments correct?")
+
         return dataframe, name_str
 
     def _create_table(self, key, **kwargs):

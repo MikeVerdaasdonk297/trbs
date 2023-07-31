@@ -68,7 +68,6 @@ class CaseImporter:
         self.dataframes_dict[table] = table_data
 
     def _convert_to_numpy_arrays_2d(self, table, data):
-        print(data.columns)
         target_column = [col for col in data.columns if col.endswith("_variable_input")]
         if len(target_column) != 1:
             raise TemplateError(f"Too many '_variable_input' columns in {table}")
@@ -110,9 +109,13 @@ class CaseImporter:
         ).ravel()
 
         data["hierarchy"] = data.apply(self._apply_first_level_hierarchy_to_row, all_inputs=all_inputs, axis=1)
-        data["hierarchy"] = data.apply(
-            self._apply_second_level_hierarchy_to_row, data=data[data["hierarchy"] != 1], axis=1
-        )
+        subdata = data[data["hierarchy"] != 1]
+        steps = 1
+        while not subdata.empty:
+            data["hierarchy"] = data.apply(self._apply_second_level_hierarchy_to_row, data=subdata, axis=1)
+            subdata = data[data["hierarchy"] > min(subdata["hierarchy"])]
+            steps += 1
+        print(f"Hierarchy calculated in {steps} iterations")
         data = data.sort_values("hierarchy")
 
         for col in self.validate_dict["dependencies"]:
@@ -136,7 +139,6 @@ class CaseImporter:
     def _create_input_dict(self):
         two_dim = ["decision_makers_options", "scenarios"]
         for table, data in self.dataframes_dict.items():
-            print(table)
             # Option 1: data is transformed to a matrix
             if table in two_dim:
                 self._convert_to_numpy_arrays_2d(table, data)

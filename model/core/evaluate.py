@@ -31,6 +31,8 @@ class Evaluate:
             "/": lambda x, y: x / y if y else 0,
             "-*": lambda x, y: -x * y,
             "-/": lambda x, y: -x / y if y else 0,
+            ">": lambda x, y: 1 if x > y else 0,
+            "<": lambda x, y: 1 if x < y else 0,
         }
 
     def _create_value_dict(self, scen_index: int, dmo_index: int) -> None:

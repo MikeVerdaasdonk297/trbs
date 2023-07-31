@@ -31,6 +31,8 @@ added along the way and do not need to be initialized. A missing value `""` is s
   - `/`: $$f(x, y) = \frac{x}{y}, \qquad \text{if } y \neq 0 \text{ else } f(x, y) = 0$$
   - `-*`: $$f(x, y) = -x \cdot y$$
   - `-/`: $$f(x, y) = \frac{-x}{y}, \qquad \text{if } y \neq 0 \text{ else } f(x, y) = 0$$
+  - `>`: $$f(x, y) = I_{x>y}$$
+  - `<`: $$f(x, y) = I_{x<y}$$
 - Operators that are not part of the list above will raise an `EvaluationError`. 
 - The `output_dict` consists of the values of ONLY the key outputs, per scenario and per decision maker option.
 

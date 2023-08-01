@@ -40,6 +40,7 @@ def test_get_start_and_end_points(appreciate_beerwiser):
         (30, {"key_output": "Sample A", "key_output_smaller_the_better": 1, "key_output_linear": 1}, 0),
         (150, {"key_output": "Sample B", "key_output_smaller_the_better": 1, "key_output_linear": 0}, 15.71),
         (-20, {"key_output": "Sample A", "key_output_smaller_the_better": 0, "key_output_linear": 0}, 0),
+        (10, {"key_output": "Sample C", "key_output_smaller_the_better": 0, "key_output_linear": 0}, 0),
     ],
 )
 def test_appreciate_single_key_output(appreciate_beerwiser, value, args, expected_result):
@@ -52,7 +53,11 @@ def test_appreciate_single_key_output(appreciate_beerwiser, value, args, expecte
     :param expected_result: expected appreciation value
     """
     # Set some own start and end points for testing purposes
-    appreciate_beerwiser.start_and_end_points = {"Sample A": [5, 20], "Sample B": [0, 235]}
+    appreciate_beerwiser.start_and_end_points = {
+        "Sample A": [5, 20],
+        "Sample B": [0, 235],
+        "Sample C": [10.345, 10.345],
+    }
     result = round(appreciate_beerwiser._appreciate_single_key_output(value, args), 2)
     assert result == expected_result
 

@@ -76,7 +76,9 @@ class CaseImporter:
         pivoted_data = data.pivot(index=table[:-1], columns=target_column[0], values="value")
         self.input_dict[table] = pivoted_data.index.to_numpy()
         self.input_dict[f"{target_column[0]}s"] = pivoted_data.columns.to_numpy()
-        self.input_dict[f"{table[:-1]}_value"] = pivoted_data.values
+        # BUSINESS RULE: Replace missing combination by zero
+        # user DOES NOT have to provide all possible (vars, dmo) or (vars, scenario) value combinations
+        self.input_dict[f"{table[:-1]}_value"] = pivoted_data.fillna(0).values
 
     @staticmethod
     def _apply_first_level_hierarchy_to_row(row, all_inputs):

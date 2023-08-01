@@ -84,6 +84,16 @@ class Evaluate:
         key_output_values = [self.value_dict[key_output] for key_output in self.input_dict["key_outputs"]]
         return dict(zip(self.input_dict["key_outputs"], key_output_values))
 
+    @staticmethod
+    def _range_protection_value(value: float, min_max: list) -> float:
+        """
+        This function returns the value between a minimum and maximum bound.
+        :param value: the value that needs to be bounded
+        :param min_max: a list containing the [minimum, maximum]
+        :return: a bounded result that will lie between provided minimum and maximum
+        """
+        return min(max(value, min_max[0]), min_max[1])
+
     def _evaluate_single_dependency(self, argument_1_value: float, argument_2_value: float, operator: str) -> int:
         """
         This function evaluates a single dependency. Raises an EvaluationError when the operator is unknown.
@@ -121,27 +131,35 @@ class Evaluate:
             # Squeezed * has its own evaluation function
             if operator == "Squeezed *":
                 arg2 = arg1 if not arg2 else arg2  # Override default of '1' if needed
-                result = {
-                    dest: dest_value
-                    + self._squeeze(
-                        self.value_dict[arg1],
-                        self.value_dict[arg2],
-                        {
-                            "saturation_point": self.input_dict["saturation_point"][index],
-                            "accessibility": self.input_dict["accessibility"][index],
-                            "probability_of_success": self.input_dict["probability_of_success"][index],
-                            "maximum_effect": self.input_dict["maximum_effect"][index],
-                        },
-                    )
-                }
+                dest_result = dest_value + self._squeeze(
+                    self.value_dict[arg1],
+                    self.value_dict[arg2],
+                    {
+                        "saturation_point": self.input_dict["saturation_point"][index],
+                        "accessibility": self.input_dict["accessibility"][index],
+                        "probability_of_success": self.input_dict["probability_of_success"][index],
+                        "maximum_effect": self.input_dict["maximum_effect"][index],
+                    },
+                )
             # All other operators are calculated using a general approach
             else:
-                result = {
-                    dest: dest_value
-                    + self._evaluate_single_dependency(self.value_dict[arg1], self.value_dict[arg2], operator)
-                }
+                dest_result = dest_value + self._evaluate_single_dependency(
+                    self.value_dict[arg1], self.value_dict[arg2], operator
+                )
+
+            # range protection for key outputs
+            if dest in self.input_dict["key_outputs"]:
+                # find the correct minimum and maximum values for the key output
+                index = np.where(self.input_dict["key_outputs"] == dest)
+                min_and_max = [
+                    self.input_dict["key_output_minimum"][index][0],
+                    self.input_dict["key_output_maximum"][index][0],
+                ]
+                # apply the minimum and maximum
+                dest_result = self._range_protection_value(dest_result, min_and_max)
 
             # update the value dictionary
+            result = {dest: dest_result}
             self.value_dict.update(result)
 
         # structure the output dictionary

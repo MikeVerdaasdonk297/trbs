@@ -35,6 +35,8 @@ added along the way and do not need to be initialized. A missing value `""` is s
   - `<`: $$f(x, y) = I_{x<y}$$
 - Operators that are not part of the list above will raise an `EvaluationError`. 
 - The `output_dict` consists of the values of ONLY the key outputs, per scenario and per decision maker option.
+- At each calculation step checks whether key output values are still within their bounds: `key_output_minimum` and 
+`key_output_maximum`.
 
 What **doesn't** this class do (yet)?
 - No checks and/or boundaries on calculated values. 

@@ -109,6 +109,20 @@ def test_get_key_outputs(evaluate_beerwiser):
 
 
 @pytest.mark.parametrize(
+    "value, min_max_list, expected_result", [(5, [10, 20], 10), (8.5, [0, 20], 8.5), (12, [0, 10], 10)]
+)
+def test_range_protection_value(evaluate_beerwiser, value, min_max_list, expected_result):
+    """
+    This function tests _range_protection_value to return a bounded value
+    :param evaluate_beerwiser: an Evaluate() class for Beerwiser
+    :param value: value that needs to be protected
+    :param min_max_list: boundaries, given as [minimum, maximum]
+    """
+    result = evaluate_beerwiser._range_protection_value(value, min_max_list)
+    assert result == expected_result
+
+
+@pytest.mark.parametrize(
     "arg1, arg2, operator, expected_result",
     [
         (8, 12, "-", -4),

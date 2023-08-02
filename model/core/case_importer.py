@@ -42,11 +42,24 @@ class CaseImporter:
         self.validate_dict = self._build_template_validators()
 
     @staticmethod
-    def _build_template_validators():
+    def _build_template_validators() -> dict:
+        """
+        This function builds a validation dictionary of type:
+        {table/sheet 1: [list of necessary columns], table/sheet 2: [list of necessary columns], ...}
+        :return: dictionary with all necessary columns per table / sheet
+        """
         template = pd.read_excel(Path(__file__).parent.parent / "data/template.xlsx", sheet_name=None)
         return {key: value.columns.values.tolist() for key, value in template.items()}
 
-    def _check_data_columns(self, to_check, table):
+    def _check_data_columns(self, to_check: pd.DataFrame, table: str) -> pd.DataFrame:
+        """
+        This function checks whether all necessary columns of a given table are provided. If necessary columns are
+        missing a TemplateError is raised. If to many columns are provided the user receives a warning, but no error
+        is raised.
+        :param to_check: dataframe that needs to be checked
+        :param table: name of the table the dataframe is supposed to be
+        :return: the dataframe with any additional non-necessary columns removed
+        """
         column_list = to_check.columns.values.tolist()
 
         # 1. Validate all necessary columns are there
@@ -59,7 +72,11 @@ class CaseImporter:
             warnings.warn(f"column(s) '{', '.join(extra_cols)}' are not used for '{table}'")
         return to_check.drop(columns=extra_cols)
 
-    def _create_dataframes_dict(self, table):
+    def _create_dataframes_dict(self, table: str) -> None:
+        """
+        This function add a pd.DataFrame to the dataframes_dict
+        :param table: name of the table to add
+        """
         try:
             table_data = self.importers[self.extension](table)
         except ValueError as value_error:
@@ -146,7 +163,7 @@ class CaseImporter:
                 self._convert_to_numpy_arrays_2d(table, data)
             # Option 2: data contains dependencies and hierarchy needs to be calculated
             elif table == "dependencies":
-                self._convert_to_ordered_dependencies(data)
+                self._convert_to_ordered_dependencies(data.copy())
             # Option 3: data is about weights and need to match order of previously added data
             elif table.endswith("_weights"):
                 self._convert_to_numpy_arrays_weights(table, data)

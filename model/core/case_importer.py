@@ -87,7 +87,7 @@ class CaseImporter:
     def _convert_to_numpy_arrays_2d(self, table: str, data: pd.DataFrame) -> None:
         """
         This function transforms a dataframe into a 2-dimensional numpy array of values. Used for both
-        the decision makers options table as well as the scenarios table
+        the decision makers options table and the scenarios table
         :param table: name of the table
         :param data: dataframe that needs to be converted
         """
@@ -104,22 +104,40 @@ class CaseImporter:
         self.input_dict[f"{table[:-1]}_value"] = pivoted_data.values
 
     @staticmethod
-    def _apply_first_level_hierarchy_to_row(row, all_inputs):
+    def _apply_first_level_hierarchy_to_row(row: pd.Series, all_inputs: np.array) -> int:
+        """
+        This function determines whether a dependency needs to be wait on other dependencies (hierarchy = 2) or can be
+        calculated from the provided inputs (hierarchy = 1)
+        :param row: a single row from the dependencies table
+        :param all_inputs: an array containing all fixed, internal and external inputs
+        :return: hierarchy level of either 1 or 2
+        """
         if row["argument_1"] in all_inputs and row["argument_2"] in all_inputs:
             return 1
         return 2
 
     @staticmethod
-    def _apply_second_level_hierarchy_to_row(row, data):
-        # The order of calculation for hierarchies of level 1 is not important
+    def _apply_second_level_hierarchy_to_row(row: pd.Series, data: pd.DataFrame) -> int:
+        """
+        This function determines higher level hierarchies, given _apply_first_level_hierarchy_to_row has been called
+        already on the data.
+        :param row: a single row from the depencies table
+        :param data: a dataframe containing (a subset of) dependencies
+        :return: hierarchy level
+        """
+        # Hierarchy level 1 can be calculated always -- based on solely input values
         if row["hierarchy"] == 1:
             return row["hierarchy"]
 
+        # iterate through the dependencies and increase if a row needs another destination to be calculated first
         for _, dep in data.iterrows():
             if dep["destination"] == row["argument_1"]:
                 row["hierarchy"] += 1
             elif dep["destination"] == row["argument_2"]:
                 row["hierarchy"] += 1
+
+        # apply a correction when argument & dependency are equal
+        row["hierarchy"] -= sum(row[column] == row["destination"] for column in ["argument_1", "argument_2"])
         return row["hierarchy"]
 
     def _convert_to_ordered_dependencies(self, data):

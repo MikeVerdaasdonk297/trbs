@@ -33,6 +33,10 @@ class Evaluate:
             "-/": lambda x, y: -x / y if y else 0,
             ">": lambda x, y: 1 if x > y else 0,
             "<": lambda x, y: 1 if x < y else 0,
+            ">=": lambda x, y: 1 if x >= y else 0,
+            "<=": lambda x, y: 1 if x <= y else 0,
+            "min": lambda x, y: min(x, y),  # ignore warning about unnecessary lambda | pylint: disable=W0108
+            "max": lambda x, y: max(x, y),  # ignore warning about unnecessary lambda | pylint: disable=W0108
         }
 
     def _create_value_dict(self, scen_index: int, dmo_index: int) -> None:
@@ -64,7 +68,7 @@ class Evaluate:
         return np.where(self.input_dict[key] == value)[0][0]
 
     def _squeeze(self, argument_1_value: float, argument_2_value: float, squeeze_args: dict) -> int:
-        """This functions evaluates ONLY the Squeeze * operator function."""
+        """This functions evaluates ONLY the squeeze * operator function."""
         division_part = self.operators_dict["/"](
             min(argument_1_value, argument_2_value), squeeze_args["saturation_point"]
         )
@@ -84,15 +88,12 @@ class Evaluate:
         key_output_values = [self.value_dict[key_output] for key_output in self.input_dict["key_outputs"]]
         return dict(zip(self.input_dict["key_outputs"], key_output_values))
 
-    @staticmethod
-    def _range_protection_value(value: float, min_max: list) -> float:
-        """
-        This function returns the value between a minimum and maximum bound.
-        :param value: the value that needs to be bounded
-        :param min_max: a list containing the [minimum, maximum]
-        :return: a bounded result that will lie between provided minimum and maximum
-        """
-        return min(max(value, min_max[0]), min_max[1])
+    def _get_value_of_argument(self, arg):
+        try:
+            value = float(arg)
+        except ValueError:
+            value = self.value_dict[arg]
+        return value
 
     def _evaluate_single_dependency(self, argument_1_value: float, argument_2_value: float, operator: str) -> int:
         """
@@ -128,12 +129,12 @@ class Evaluate:
             arg2 = self.input_dict["argument_2"][index]
             operator = self.input_dict["operator"][index]
 
-            # Squeezed * has its own evaluation function
-            if operator == "Squeezed *":
+            # squeezed * has its own evaluation function
+            if operator == "squeezed *":
                 arg2 = arg1 if not arg2 else arg2  # Override default of '1' if needed
                 dest_result = dest_value + self._squeeze(
-                    self.value_dict[arg1],
-                    self.value_dict[arg2],
+                    self._get_value_of_argument(arg1),
+                    self._get_value_of_argument(arg2),
                     {
                         "saturation_point": self.input_dict["saturation_point"][index],
                         "accessibility": self.input_dict["accessibility"][index],
@@ -144,19 +145,8 @@ class Evaluate:
             # All other operators are calculated using a general approach
             else:
                 dest_result = dest_value + self._evaluate_single_dependency(
-                    self.value_dict[arg1], self.value_dict[arg2], operator
+                    self._get_value_of_argument(arg1), self._get_value_of_argument(arg2), operator
                 )
-
-            # range protection for key outputs
-            if dest in self.input_dict["key_outputs"]:
-                # find the correct minimum and maximum values for the key output
-                index = np.where(self.input_dict["key_outputs"] == dest)
-                min_and_max = [
-                    self.input_dict["key_output_minimum"][index][0],
-                    self.input_dict["key_output_maximum"][index][0],
-                ]
-                # apply the minimum and maximum
-                dest_result = self._range_protection_value(dest_result, min_and_max)
 
             # update the value dictionary
             result = {dest: dest_result}

@@ -107,12 +107,16 @@ class CaseImporter:
     def _apply_first_level_hierarchy_to_row(row: pd.Series, all_inputs: np.array) -> int:
         """
         This function determines whether a dependency needs to be wait on other dependencies (hierarchy = 2) or can be
-        calculated from the provided inputs (hierarchy = 1)
+        calculated from the provided inputs or numeric argument value. (hierarchy = 1)
         :param row: a single row from the dependencies table
         :param all_inputs: an array containing all fixed, internal and external inputs
         :return: hierarchy level of either 1 or 2
         """
-        if row["argument_1"] in all_inputs and row["argument_2"] in all_inputs:
+        args_with_known_value = sum(
+            [(row[arg] in all_inputs or row[arg].isdigit()) for arg in ["argument_1", "argument_2"]]
+        )
+        # if both values of the args are known return level 1, else return level 2
+        if args_with_known_value == 2:
             return 1
         return 2
 

@@ -29,7 +29,7 @@ What **does** this class do?
 variables and fixed values. Values are updated in this dictionary when dependencies are calculated. Intermediates are
 added along the way and do not need to be initialized. A missing value `""` is set to 1.
 - Calculates dependencies based on a list of allowed operators:
-  - `Squeezed *`: 
+  - `squeezed *`: 
  $$f(x, y, sp, acc, p, me) = \min\left(1, \frac{\min(x,y)}{sp}\right) \cdot acc \cdot p \cdot me, \qquad \text{if } sp \neq 0$$
   where $sp=$ saturation_point, $acc=$ accessibility, $p=$ probability of success and $me=$ maximum effect. 
   Note that when $sp= 0$, we set $f(x, y, sp, acc, p, me)=0$
@@ -39,12 +39,12 @@ added along the way and do not need to be initialized. A missing value `""` is s
   - `/`: $$f(x, y) = \frac{x}{y}, \qquad \text{if } y \neq 0 \text{ else } f(x, y) = 0$$
   - `-*`: $$f(x, y) = -x \cdot y$$
   - `-/`: $$f(x, y) = \frac{-x}{y}, \qquad \text{if } y \neq 0 \text{ else } f(x, y) = 0$$
-  - `>`: $$f(x, y) = I_{x>y}$$
-  - `<`: $$f(x, y) = I_{x<y}$$
+  - `>` or `>=`: $$f(x, y) = I_{x>(=)y}$$
+  - `<` or `<=`: $$f(x, y) = I_{x<(=)y}$$
+  - `min` or `max`: $$f(x, y) = \min(x, y) \text{ or } f(x, y) = \max(x, y)
 - Operators that are not part of the list above will raise an `EvaluationError`. 
 - The `output_dict` consists of the values of ONLY the key outputs, per scenario and per decision maker option.
-- At each calculation step checks whether key output values are still within their bounds: `key_output_minimum` and 
-`key_output_maximum`.
+- Use the build-in operations `min` and `max` to protect the ranges for a dependency row your liking.
 
 What **doesn't** this class do (yet)?
 - No checks and/or boundaries on calculated values. 

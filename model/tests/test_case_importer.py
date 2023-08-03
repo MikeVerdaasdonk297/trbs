@@ -51,8 +51,6 @@ def test_build_template_validators(import_beerwiser_json):
         "key_outputs": [
             "key_output",
             "theme",
-            "minimum",
-            "maximum",
             "monetary",
             "smaller_the_better",
             "linear",
@@ -257,7 +255,7 @@ def test_convert_to_ordered_dependencies(import_beerwiser_json):
     input_data = pd.DataFrame(
         {
             "destination": ["law", "super love", "lawyer", "IT", "crook", "education"],
-            "argument_1": ["tech", "love", "education", "law", "law", "money"],
+            "argument_1": ["tech", "love", "education", "law", "5", "money"],
             "argument_2": ["", "", "law", "tech", "money", "love"],
             "operator": np.full(6, "N/A"),
             "maximum_effect": np.full(6, "N/A"),
@@ -273,15 +271,15 @@ def test_convert_to_ordered_dependencies(import_beerwiser_json):
         "fixed_inputs": ["love", "money"],
         "internal_variable_inputs": [],
         "external_variable_inputs": [],
-        "destination": np.array(["super love", "education", "law", "lawyer", "IT", "crook"], dtype=object),
-        "argument_1": np.array(["love", "money", "tech", "education", "law", "law"], dtype=object),
-        "argument_2": np.array(["", "love", "", "law", "tech", "money"], dtype=object),
+        "destination": np.array(["super love", "crook", "education", "law", "lawyer", "IT"], dtype=object),
+        "argument_1": np.array(["love", "5", "money", "tech", "education", "law"], dtype=object),
+        "argument_2": np.array(["", "money", "love", "", "law", "tech"], dtype=object),
         "operator": np.full(6, "N/A", dtype=object),
         "maximum_effect": np.full(6, "N/A", dtype=object),
         "accessibility": np.full(6, "N/A", dtype=object),
         "probability_of_success": np.full(6, "N/A", dtype=object),
         "saturation_point": np.full(6, "N/A", dtype=object),
-        "dependencies_order": np.array([1, 5, 0, 2, 3, 4]),
+        "dependencies_order": np.array([1, 4, 5, 0, 2, 3]),
     }
     assert all(np.array_equal(expected_result[key], result[key]) for key in result)
 

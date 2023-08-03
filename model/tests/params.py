@@ -11,8 +11,6 @@ INPUT_DICT = {
     "key_output_unit": np.array(["#/year", "hl/year", "%"], dtype=object),
     "key_output_theme": np.array(["People", "Planet", "Profit"], dtype=object),
     "themes": np.array(["People", "Planet", "Profit"], dtype="<U32"),
-    "key_output_minimum": np.array([np.nan, np.nan, np.nan]),
-    "key_output_maximum": np.array([np.nan, np.nan, np.nan]),
     "key_output_monetary": np.array([0, 0, 0]),
     "key_output_smaller_the_better": np.array([0, 0, 0]),
     "key_output_linear": np.array([1, 1, 0]),
@@ -107,7 +105,7 @@ INPUT_DICT = {
         dtype=object,
     ),
     "operator": np.array(
-        ["Squeezed *", "Squeezed *", "/", "*", "*", "*", "*", "*", "*", "-*", "*", "-*", "/"], dtype=object
+        ["squeezed *", "squeezed *", "/", "*", "*", "*", "*", "*", "*", "-*", "*", "-*", "/"], dtype=object
     ),
     "maximum_effect": np.array(
         [0.48, 0.5, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]

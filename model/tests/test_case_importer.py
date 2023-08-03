@@ -1,12 +1,13 @@
 # Ignore PEP8 protected-access to client class | pylint: disable=W0212
 """
 This module contains all tests for the CaseImporter() class.
-NOTE: only functions that
+NOTE: _create_input_dict & import_case are not tested as they are only helper function that call other functions
 """
 import warnings
 from pathlib import Path
 import pytest
 import pandas as pd
+import numpy as np
 from core.case_importer import CaseImporter, TemplateError
 
 
@@ -152,7 +153,7 @@ def test_create_dataframes_dict(fixture_name, table, request):
     """
     This function tests _create_dataframes to update self.dataframes_dict with a new {key: pd.DataFrame} pair.
     Only the structure of the output is tested.
-    :param fixture_name: used version of the CaseImporer class. Fixtures differ in used extension / file format
+    :param fixture_name: used version of the CaseImporter class. Fixtures differ in used extension / file format
     :param table: name of the table
     :param request: needed to transform fixture_name to a fixture value
     """
@@ -161,3 +162,152 @@ def test_create_dataframes_dict(fixture_name, table, request):
     result_structure = {key: type(value) for key, value in case_importer.dataframes_dict.items()}
     expected_structure = {table: pd.DataFrame}
     assert result_structure == expected_structure
+
+
+def test_create_dataframes_dict_error(import_beerwiser_json):
+    """
+    This function tests _create_dataframes_dict to raise an error when a missing table name is called.
+    Note: the file extension (here: json) is not relevant for this test, so only one needs to be tested
+    :param import_beerwiser_json: an CaseImporter class for the beerwiser case
+    """
+    with pytest.raises(TemplateError) as template_error:
+        import_beerwiser_json._create_dataframes_dict("Missing Table")
+    expected_result = "Template Error: Sheet 'Missing Table' is missing"
+    assert str(template_error.value) == expected_result
+
+
+def test_convert_to_numpy_arrays_2d(import_beerwiser_json):
+    """
+    This function tests _convert_to_numpy_arrays_2d to return properly pivoted numpy arrays from the given dataframe.
+    Note: the file extension (here: json) is not relevant for this test, so only one needs to be tested
+    :param import_beerwiser_json: an CaseImporter class for the beerwiser case
+    """
+    input_dataframe = pd.DataFrame(
+        {
+            "internal_variable_input": ["A", "B", "A", "B"],
+            "decision_makers_option": ["X", "X", "Y", "Y"],
+            "value": [2, 3, 4, 5],
+        }
+    )
+    import_beerwiser_json._convert_to_numpy_arrays_2d("decision_makers_options", input_dataframe)
+    result = import_beerwiser_json.input_dict
+    expected_result = {
+        "decision_makers_options": np.array(["X", "Y"]),
+        "internal_variable_inputs": np.array(["A", "B"]),
+        "decision_makers_option_value": np.array([[2, 3], [4, 5]]),
+    }
+    assert all(np.array_equal(expected_result[key], result[key]) for key in result)
+
+
+@pytest.mark.parametrize(
+    "row, all_inputs, expected_output",
+    [
+        (pd.Series({"argument_1": "money", "argument_2": "love"}), np.array(["education", "money"]), 2),
+        (pd.Series({"argument_1": "love", "argument_2": "love"}), np.array(["education", "police", "law"]), 2),
+        (pd.Series({"argument_1": "law", "argument_2": "love"}), np.array(["love", "money", "law"]), 1),
+    ],
+)
+def test_apply_first_level_hierarchy_to_row(import_beerwiser_json, row, all_inputs, expected_output):
+    """
+    This function tests _apply_first_level_hierarchy_to_row to return a 1 or 2 based on the presence of names in the
+    input array. Note: the file extension (here: json) is not relevant for this test, so only one needs to be tested
+    :param import_beerwiser_json: an CaseImporter class for the beerwiser case
+    :param row: a pd.Series containing the needed values from dependency row
+    :param all_inputs: an array containing the available input names
+    :param expected_output: the expected output of the function
+    """
+    result = import_beerwiser_json._apply_first_level_hierarchy_to_row(row, all_inputs)
+    assert result == expected_output
+
+
+@pytest.mark.parametrize(
+    "row, expected_output",
+    [
+        (pd.Series({"destination": "law", "argument_1": "money", "argument_2": "love", "hierarchy": 1}), 1),
+        (pd.Series({"destination": "education", "argument_1": "money", "argument_2": "love", "hierarchy": 3}), 5),
+    ],
+)
+def test_apply_second_level_hierarchy_to_row(import_beerwiser_json, row, expected_output):
+    """
+    This function tests _apply_second_level_hierarchy_to_row to return the right hierarchy level. For testing purposes
+    only the relevant columns are provided as input.
+    Note: the file extension (here: json) is not relevant for this test, so only one needs to be tested
+    :param import_beerwiser_json: an CaseImporter class for the beerwiser case
+    :param row: single row of dependencies
+    :param data: a dataframe containing all dependencies
+    """
+    input_dataframe = pd.DataFrame({"destination": np.array(["love", "law", "law", "money", "education"])})
+    result = import_beerwiser_json._apply_second_level_hierarchy_to_row(row, input_dataframe)
+    assert result == expected_output
+
+
+def test_convert_to_ordered_dependencies(import_beerwiser_json):
+    """
+    This function tests test_convert_to_ordered_dependencies to add the dependencies in the correct order to the
+    input dictionary
+    Note: the file extension (here: json) is not relevant for this test, so only one needs to be tested
+    :param import_beerwiser_json: an CaseImporter class for the beerwiser case
+    """
+    # set-up for testing
+    import_beerwiser_json.input_dict = {
+        "fixed_inputs": ["love", "money"],
+        "internal_variable_inputs": [],
+        "external_variable_inputs": [],
+    }
+    input_data = pd.DataFrame(
+        {
+            "destination": ["law", "super love", "lawyer", "IT", "crook", "education"],
+            "argument_1": ["tech", "love", "education", "law", "law", "money"],
+            "argument_2": ["", "", "law", "tech", "money", "love"],
+            "operator": np.full(6, "N/A"),
+            "maximum_effect": np.full(6, "N/A"),
+            "accessibility": np.full(6, "N/A"),
+            "probability_of_success": np.full(6, "N/A"),
+            "saturation_point": np.full(6, "N/A"),
+        }
+    )
+    # compare
+    import_beerwiser_json._convert_to_ordered_dependencies(input_data)
+    result = import_beerwiser_json.input_dict
+    expected_result = {
+        "fixed_inputs": ["love", "money"],
+        "internal_variable_inputs": [],
+        "external_variable_inputs": [],
+        "destination": np.array(["super love", "education", "law", "lawyer", "IT", "crook"], dtype=object),
+        "argument_1": np.array(["love", "money", "tech", "education", "law", "law"], dtype=object),
+        "argument_2": np.array(["", "love", "", "law", "tech", "money"], dtype=object),
+        "operator": np.full(6, "N/A", dtype=object),
+        "maximum_effect": np.full(6, "N/A", dtype=object),
+        "accessibility": np.full(6, "N/A", dtype=object),
+        "probability_of_success": np.full(6, "N/A", dtype=object),
+        "saturation_point": np.full(6, "N/A", dtype=object),
+        "dependencies_order": np.array([1, 5, 0, 2, 3, 4]),
+    }
+    assert all(np.array_equal(expected_result[key], result[key]) for key in result)
+
+
+def test_convert_to_numpy_arrays_weights(import_beerwiser_json):
+    """
+    This function tests _convert_to_numpy_arrays_weights to properly update the input dictionary.
+    Note: the file extension (here: json) is not relevant for this test, so only one needs to be tested
+    :param import_beerwiser_json: an CaseImporter class for the beerwiser case
+    """
+    import_beerwiser_json.input_dict = {"key_outputs": ["C", "B", "A"]}
+    input_data = pd.DataFrame({"key_output": ["A", "B", "C"], "weight": [1, 5, 2]})
+    import_beerwiser_json._convert_to_numpy_arrays_weights("key_output_weights", input_data)
+    result = import_beerwiser_json.input_dict
+    expected_result = {"key_outputs": np.array(["C", "B", "A"]), "key_output_weight": np.array([2, 5, 1])}
+    assert all(np.array_equal(expected_result[key], result[key]) for key in result)
+
+
+def test_convert_to_numpy_arrays(import_beerwiser_json):
+    """
+    This function tests _convert_to_numpy_arrays to properly update the input dictionary
+    Note: the file extension (here: json) is not relevant for this test, so only one needs to be tested
+    :param import_beerwiser_json: an CaseImporter class for the beerwiser case
+    """
+    input_dataframe = pd.DataFrame({"fixed_input": ["A", "B", "C", "D"], "value": [3, 5, 2, 8]})
+    import_beerwiser_json._convert_to_numpy_arrays("fixed_inputs", input_dataframe)
+    result = import_beerwiser_json.input_dict
+    expected_result = {"fixed_inputs": np.array(["A", "B", "C", "D"]), "fixed_input_value": np.array([3, 5, 2, 8])}
+    assert all(np.array_equal(expected_result[key], result[key]) for key in result)

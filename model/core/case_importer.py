@@ -140,8 +140,16 @@ class CaseImporter:
         row["hierarchy"] -= sum(row[column] == row["destination"] for column in ["argument_1", "argument_2"])
         return row["hierarchy"]
 
-    def _convert_to_ordered_dependencies(self, data):
+    def _convert_to_ordered_dependencies(self, data: pd.DataFrame) -> None:
+        """
+        This function converts the dependency table into a sorted version, based on calculated hierarchies.
+        The sorted arrays are stored in the input dictionary.
+        :param data: dataframe containing a dependencies table
+        """
+        # step 0: clean-up empty arguments
         data[["argument_1", "argument_2"]] = data[["argument_1", "argument_2"]].fillna("")
+
+        # step 1: collect all input where the value is known
         all_inputs = np.hstack(
             (
                 self.input_dict["fixed_inputs"],
@@ -151,9 +159,13 @@ class CaseImporter:
             )
         ).ravel()
 
+        # step 2: determine hierarchies
+        # step 2A: first-level hierarchies | calculations that use solely input variables
         data["hierarchy"] = data.apply(self._apply_first_level_hierarchy_to_row, all_inputs=all_inputs, axis=1)
         subdata = data[data["hierarchy"] != 1]
         steps = 1
+        # STEP 2B: higher-level hierarchies | calculation that depend on other destinations
+        # remove the lowest available hierarchy in each step, iterate until all dependencies have been removed
         while not subdata.empty:
             data["hierarchy"] = data.apply(self._apply_second_level_hierarchy_to_row, data=subdata, axis=1)
             subdata = data[data["hierarchy"] > min(subdata["hierarchy"])]
@@ -161,19 +173,32 @@ class CaseImporter:
         print(f"Hierarchy calculated in {steps} iterations")
         data = data.sort_values("hierarchy")
 
+        # step 3: store the data in the input_dict
         for col in self.validate_dict["dependencies"]:
             self.input_dict[col] = data[col].to_numpy()
         self.input_dict["dependencies_order"] = data.index.to_numpy()
 
-    def _convert_to_numpy_arrays_weights(self, table, data):
+    def _convert_to_numpy_arrays_weights(self, table: str, data: pd.DataFrame) -> None:
+        """
+        This function converts the different weight tables to numpy arrays for the input dictionary.
+        :param table: name of the table
+        :param data: dataframe of the table
+        """
         option, weight = self.validate_dict[table]
+        # if the option arrays (theme, key_output, scenario) has not been added previously, add it now
         if f"{option}s" not in self.input_dict:
             self.input_dict[f"{option}s"] = data[option].to_numpy()
 
+        # ensure the order of weights vector is the same as the order used previously
         ordered_data = pd.DataFrame(self.input_dict[f"{option}s"], columns=[option]).merge(data)
         self.input_dict[f"{option}_{weight}"] = ordered_data[weight].to_numpy()
 
-    def _convert_to_numpy_arrays(self, table, data):
+    def _convert_to_numpy_arrays(self, table: str, data: pd.DataFrame) -> None:
+        """
+        This function converts a dataframe to numpy arrays in the input dictionary
+        :param table: name of the table
+        :param data: dataframe of the table
+        """
         columns = self.validate_dict[table]
         for col in columns:
             key_name = table if col == table[:-1] else f"{table[:-1]}_{col}"

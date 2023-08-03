@@ -9,6 +9,14 @@ a separate chapter, with the focus on the currently available options.
 What **does** it do?
 - Load a case given the user provided a proper `name`, `file_extension` and `file_path`. 
 - Verify that **at least** all tables are there and checks both for missing column names and extra column names.
+- Calculate the `hierarchy`-level with an iterative proces:
+  - If both `argument_1` and `argument_2` are in the set of (fixed input, internal variable input, 
+  external variable input) then **hierarchy level = 1**
+  - For the remaining set $S$ of dependencies **hierarchy level > 1**, we do the following: 
+    1. add 1 to the hierarchy level for each 
+    argument of a row that is equal to the destination of **another dependency**
+    2. Remove the rows with the lowest hierarchy from set $S$. If set $S$ is non-empty go back to step a.
+    3. If set $S$ is empty, stop the proces. 
 
 What **doesn't** it do?
 - Use the `configurations` sheet

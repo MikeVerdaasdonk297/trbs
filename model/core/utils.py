@@ -3,7 +3,7 @@ This module contains general helper functions
 """
 
 
-def round_all_dict_values(my_dict, digits=2):
+def round_all_dict_values(my_dict: dict, digits: int = 2) -> dict:
     """
     This function rounds all values in a dictionary to the number of digits specified. Works for nested dictionaries.
     :param my_dict: (nested) dictionary
@@ -13,7 +13,7 @@ def round_all_dict_values(my_dict, digits=2):
     rounded_dict = {}
     for key, value in my_dict.items():
         if isinstance(value, dict):
-            rounded_dict[key] = round_all_dict_values(value)
+            rounded_dict[key] = round_all_dict_values(value, digits)
         elif isinstance(value, list):
             rounded_dict[key] = [round(val, digits) for val in value]
         else:
@@ -21,7 +21,7 @@ def round_all_dict_values(my_dict, digits=2):
     return rounded_dict
 
 
-def get_values_from_target(dictionary: dict, target: str):
+def get_values_from_target(dictionary: dict, target: str) -> list:
     """
     This function return all (nested) values for a given dictionary and target key
     :param dictionary: dictionary where values need to be subtracted from

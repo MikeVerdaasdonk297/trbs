@@ -79,12 +79,18 @@ class CaseImporter:
         """
         try:
             table_data = self.importers[self.extension](table)
-        except ValueError as value_error:
-            raise TemplateError(f"Sheet '{table}' is missing") from value_error
+        except (ValueError, FileNotFoundError) as missing_table:
+            raise TemplateError(f"Sheet '{table}' is missing") from missing_table
         table_data = self._check_data_columns(table_data, table)
         self.dataframes_dict[table] = table_data
 
-    def _convert_to_numpy_arrays_2d(self, table, data):
+    def _convert_to_numpy_arrays_2d(self, table: str, data: pd.DataFrame) -> None:
+        """
+        This function transforms a dataframe into a 2-dimensional numpy array of values. Used for both
+        the decision makers options table as well as the scenarios table
+        :param table: name of the table
+        :param data: dataframe that needs to be converted
+        """
         target_column = [col for col in data.columns if col.endswith("_variable_input")]
         if len(target_column) != 1:
             raise TemplateError(f"Too many '_variable_input' columns in {table}")
@@ -95,7 +101,7 @@ class CaseImporter:
         self.input_dict[f"{target_column[0]}s"] = pivoted_data.columns.to_numpy()
         # BUSINESS RULE: Replace missing combination by zero
         # user DOES NOT have to provide all possible (vars, dmo) or (vars, scenario) value combinations
-        self.input_dict[f"{table[:-1]}_value"] = pivoted_data.fillna(0).values
+        self.input_dict[f"{table[:-1]}_value"] = pivoted_data.values
 
     @staticmethod
     def _apply_first_level_hierarchy_to_row(row, all_inputs):

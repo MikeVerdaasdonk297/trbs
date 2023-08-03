@@ -26,19 +26,30 @@ class CaseExporter:
             ),
         }
 
-    def _create_output_folder(self, folder_name):
+    def _create_output_folder(self, folder_name: str) -> None:
+        """
+        This function creates a new folder to store the data
+        :param folder_name: name of the output folder
+        """
         try:
             os.makedirs(self.output_path / folder_name)
         except FileExistsError:
             print(f"Folder '{folder_name}' already exists. ")
         self.folder_name = folder_name
 
-    def _store_as_excel_template(self):
+    def _store_as_excel_template(self) -> None:
+        """
+        This function stores the data in the dataframe_dict as an Excel-file. Each table will get its own sheet.
+        """
         with pd.ExcelWriter(self.output_path / self.folder_name / f"{self.name}.xlsx") as writer:
             for table, _ in self.dataframe_dict.items():
                 self.transformers["xlsx"](table, writer)
 
-    def create_template_for_requested_format(self, requested_format):
+    def create_template_for_requested_format(self, requested_format: str) -> None:
+        """
+        This function stores the data in dataframe_dict into a new files of requested_format
+        :param requested_format: format of the requested file
+        """
         self._create_output_folder(requested_format)
         if requested_format == "xlsx":
             self._store_as_excel_template()

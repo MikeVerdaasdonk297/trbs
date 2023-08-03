@@ -54,6 +54,7 @@ class TheResponsibleBusinessSimulator:
         case_import = CaseImporter(self.file_path, self.name, self.file_extension)
         self.input_dict, self.dataframe_dict = case_import.import_case()
 
+    # TODO: param what to evaluate: single scenario = None, single dmo = None
     def evaluate(self):
         """This function deals with the evaluation of all dependencies"""
         case_evaluation = Evaluate(self.input_dict)

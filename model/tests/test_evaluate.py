@@ -37,7 +37,6 @@ def test_create_value_dict(evaluate_beerwiser):
         "Current production cost": 7500000.0,
         "Current water use": 15000000.0,
         "Water unit cost": 0.05,
-        "": 1,
     }
 
     assert result == expected_result
@@ -66,23 +65,21 @@ def test_find_index(evaluate_beerwiser, key, value, expected_result):
 
 
 @pytest.mark.parametrize(
-    "arg1, arg2, args, expected_result",
+    "arg1, args, expected_result",
     [
         (
             10,
-            15,
             {"saturation_point": 30, "accessibility": 0.9, "probability_of_success": 0.80, "maximum_effect": 0.5},
             0.12,
         ),
         (
             10,
-            15,
             {"saturation_point": 5, "accessibility": 0.95, "probability_of_success": 0.85, "maximum_effect": 0.7},
             0.565,
         ),
     ],
 )
-def test_squeeze(evaluate_beerwiser, arg1, arg2, args, expected_result):
+def test_squeeze(evaluate_beerwiser, arg1, args, expected_result):
     """
     This function tests _squeeze to return a correctly calculated values using the Squeezed * operator. Tested for both
     when min(x,y) / saturation_point > 1 and min(x,y) / saturation_point < 1.
@@ -92,7 +89,7 @@ def test_squeeze(evaluate_beerwiser, arg1, arg2, args, expected_result):
     :param args: dictionary containing arguments used solely for squeezed
     :param expected_result: expected value of evaluated squeeze function
     """
-    result = round(evaluate_beerwiser._squeeze(arg1, arg2, args), 3)
+    result = round(evaluate_beerwiser._squeeze(arg1, args), 3)
     assert result == expected_result
 
 
